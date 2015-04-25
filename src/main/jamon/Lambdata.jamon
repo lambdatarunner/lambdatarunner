@@ -1,0 +1,40 @@
+<%args>
+  int n;
+</%args>
+package org.lambdatarunner;
+
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+public final class Lambdata {
+  private Lambdata() {} // prevent instantiation
+
+<&| repeatLine: n &>
+  <%args>int i;</%args>
+  /**
+   * Create a datum with <% i %> elements
+<&| repeatLine: i &><%args>int j;</%args>\
+   * @param value<% j %> element <% j %>
+</&>\
+   * @return a datum
+   */
+  public static <<& typeParameters: i &>> Datum<% i %><<& typeParameters: i &>> datum(<& parameters: i &>) {
+    return new Datum<% i %><>(<& arguments: i &>);
+  }
+</&>
+
+<&| repeatLine: n &>
+  <%args>int i;</%args>
+  /**
+   * Create a TestSpecs to be run by {@link LambdataRunner}
+   * @param testRunner a lambda expression containing test code
+   * @param data a series of datum to provide to {@code testRunner}, created by calls to
+   * {@link #datum(<&| commaJoin: i &><%args>int j;</%args>Object</&>)}
+   * @return
+   */
+  @SafeVarargs
+  public static <<& typeParameters: i &>> TestSpecs specs(TestRunner<% i %><<& typeParameters: i &>> testRunner, Datum<% i %><<& typeParameters: i &>>... data) {
+    return new TestSpecs(Stream.of(data).map(datum -> new TestSpec<% i %><>(testRunner, datum)).collect(Collectors.toList()));
+  }
+</&>
+}

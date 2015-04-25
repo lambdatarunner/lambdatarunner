@@ -1,0 +1,4 @@
+<%args>
+  int n;
+</%args>
+<&| commaJoin: n &><%args>int i;</%args>T<% i %></&>\

@@ -1,0 +1,8 @@
+<%args>
+  int n;
+</%args>
+package org.lambdatarunner;
+
+public interface TestRunner<% n %><<& typeParameters: n &>> {
+    void run(<& parameters: n &>) throws Exception;
+}

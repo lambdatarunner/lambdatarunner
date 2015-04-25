@@ -1,0 +1,108 @@
+import org.jamon.compiler.TemplateProcessor;
+
+apply plugin: 'java'
+apply plugin: 'maven'
+apply plugin: 'jacoco'
+
+group = 'org.lambdatarunner'
+version = 'master-SNAPSHOT'
+
+description = "Data driven junit tests using lambdas"
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+ext.generatedJamon = "${buildDir}/generatedJamon"
+ext.compiledJamon = "${buildDir}/compiledJamon"
+ext.generatedJava = "${buildDir}/generatedJava"
+ext.maxParameters = 10
+
+buildscript {
+    dependencies {
+        classpath 'org.jamon:jamon-processor:2.4.2'
+        classpath 'org.jamon:jamon-runtime:2.4.1'
+    }
+    repositories {
+         mavenCentral()
+    }
+}
+
+sourceSets {
+    templates {
+        java {
+            srcDir generatedJamon
+        }
+        output.classesDir compiledJamon
+    }
+
+    main {
+        java {
+            srcDir generatedJava
+        }
+    }
+}
+
+repositories {
+     mavenCentral()
+}
+
+dependencies {
+    compile 'junit:junit:4.11'
+    testCompile 'org.mockito:mockito-all:1.9.5'
+    testCompile 'com.google.guava:guava:18.0'
+    testCompile 'org.pojomatic:pojomatic:2.0.1'
+    templatesCompile 'org.jamon:jamon-runtime:2.4.1'
+}
+
+task templates << {
+    processTemplates(file("src/main/jamon"), file(generatedJamon))
+}
+
+task generateJavaFiles(dependsOn: compileTemplatesJava) << {
+    ClassLoader loader = new URLClassLoader( [ file(compiledJamon).toURI().toURL() ] as URL[], getClass().classLoader)
+    (1..maxParameters).each {
+        runTemplate(loader, "Datum", "Datum${it}", it)
+        runTemplate(loader, "TestRunner", "TestRunner${it}", it)
+        runTemplate(loader, "TestSpec", "TestSpec${it}", it)
+    }
+    runTemplate(loader, "Lambdata", "Lambdata", maxParameters)
+}
+
+compileTemplatesJava {
+    dependsOn templates
+}
+
+compileJava {
+    dependsOn generateJavaFiles
+}
+
+test {
+  exclude { it.getPath().contains('$') }
+  finalizedBy jacocoTestReport
+}
+
+jacocoTestReport {
+    dependsOn test
+}
+
+void runTemplate(ClassLoader loader, String templateName, String className, Object... templateArgs) {
+    File targetFile = file("${generatedJava}/org/lambdatarunner/${className}.java")
+    targetFile.parentFile.mkdirs()
+    targetFile.withWriter { Writer writer -> createTemplate(templateName, loader).render(writer, *templateArgs) }
+}
+
+def createTemplate(String templateName, ClassLoader loader) {
+    return loader.loadClass(templateName).newInstance()
+}
+
+void processTemplates(File templateDir, File generatedSourceDir) {
+    TemplateProcessor processor = new TemplateProcessor(generatedSourceDir, templateDir, getClass().getClassLoader())
+    fileTree(templateDir).include('**/*.jamon').each { File template ->
+        println("rel: " + relativePath(templateDir, template))
+        processor.generateSource(relativePath(templateDir, template))
+    }
+}
+
+String relativePath(File parentDir, File fullPath) {
+    return parentDir.toURI().relativize( fullPath.toURI() ).toString()
+}

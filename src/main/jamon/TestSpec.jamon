@@ -1,0 +1,26 @@
+<%args>
+  int n;
+</%args>
+package org.lambdatarunner;
+
+public class TestSpec<% n %><<& typeParameters: n &>> implements TestSpec {
+    private final <& testRunnerDecl &>;
+    private final <& datumDecl &>;
+
+    public TestSpec<% n %>(<& testRunnerDecl &>, <& datumDecl &>) {
+        this.testRunner = testRunner;
+        this.datum = datum;
+    }
+
+    @Override
+    public void run() throws Throwable {
+        testRunner.run(<&| commaJoin: n &><%args>int i;</%args>datum.value<% i %></&>);
+    }
+
+    @Override
+    public Datum getDatum() {
+        return datum;
+    }
+}
+<%def testRunnerDecl>TestRunner<% n %><<& typeParameters: n &>> testRunner</%def>
+<%def datumDecl>Datum<% n %><<& typeParameters: n &>> datum</%def>

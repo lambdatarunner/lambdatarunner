@@ -1,0 +1,21 @@
+<%args>
+  int n;
+</%args>
+
+package org.lambdatarunner;
+
+public class Datum<% n %><<& typeParameters: n &>> implements Datum {
+<&| repeatLine: n &><%args>int i;</%args>\
+    final T<% i %> value<% i %>;
+</&>
+    public Datum<% n %>(<& parameters: n &>) {
+<&| repeatLine: n &><%args>int i;</%args>\
+        this.value<% i %> = value<% i %>;
+</&>
+    }
+
+    @Override
+    public Object[] values() {
+        return new Object[] { <& arguments: n &> };
+    }
+}

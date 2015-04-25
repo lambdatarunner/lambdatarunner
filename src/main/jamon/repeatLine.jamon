@@ -1,0 +1,7 @@
+<%args>
+  int n;
+</%args>
+<%frag content>
+  int i;
+</%frag>
+<%for int i = 1; i <= n; i++ %><& content: i &></%for>\
