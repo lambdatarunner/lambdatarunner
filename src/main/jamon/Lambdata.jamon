@@ -30,7 +30,7 @@ public final class Lambdata {
    * @param testRunner a lambda expression containing test code
    * @param data a series of datum to provide to {@code testRunner}, created by calls to
    * {@link #datum(<&| commaJoin: i &><%args>int j;</%args>Object</&>)}
-   * @return
+   * @return test specs
    */
   @SafeVarargs
   public static <<& typeParameters: i &>> TestSpecs specs(TestRunner<% i %><<& typeParameters: i &>> testRunner, Datum<% i %><<& typeParameters: i &>>... data) {
