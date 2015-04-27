@@ -25,13 +25,13 @@ import org.lambdatarunner.internal.ParameterizedInvokeMethod;
  * with {@code @RunWith(LambdataRunner.class)}. To make a test method parameter-driven, annotate it as usual
  * with {@code @Test}, but declare the method to return an instance of type {@link TestSpecs}. Such instances are
  * created by calling the {@code specs} method on {@link Lambdata}, providing a lambda which specifies the test run,
- * followed a series of datum (created by the {@code datum} method on {@code LambdataRunner}) which will be provided
+ * followed a series of datum (created by the {@code datum} method on {@link Lambdata}) which will be provided
  * to the lambda in turn. The specs and datum methods have overloads allowing for the number of parameters to range
  * anywhere between 1 and 10.
  * <p >
  * When tests are run, they will be grouped by method. By default, each individual test run will have the name of the
  * method, followed by a counter that starts at one and increments for each datum. The counter can be replaced
- * by custom text supplied via the &#64;{@link DescribeAs} annotation, providing a format string suitable for
+ * by custom text supplied via the {@link DescribeAs @DescribeAs} annotation, providing a format string suitable for
  * {@link MessageFormat#format(String, Object...)}. The arguments to the format string will be the fields of the
  * datum under test.
  * <p>
