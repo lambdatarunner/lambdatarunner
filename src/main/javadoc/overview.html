@@ -1,0 +1,31 @@
+<body>
+<div class="block">
+  Lambdata Runner is a JUnit runner which allows using lambdas to set up data-driven tests. For details, see
+  {@link org.lambdatarunner.LambdataRunner}. To get a quick feel for how it works, look at the following sample code:
+ <code>
+ <pre>
+   import static org.lambdatarunner.Lambdata.*;
+   import org.lambdatarunner.LambdataRunner;
+   import org.lambdatarunner.TestSpecs;
+   import org.junit.runner.RunWith;
+   import static org.junit.Assert.assertEquals;
+   import org.junit.Test;
+
+   &#64;RunWith(LambdataRunner.class)
+   public class MathTests {
+     &#64;Test
+     &#64;DescribeAs("for string ''{0}''")
+     public TestSpecs testStringLength() {
+       return specs(
+         (string, length) -> assertEquals((int) length, string.length()),
+         datum("", 0),
+         datum("a", 1),
+         datum("hello", 5));
+     }
+   }
+ </pre>
+ <code></div>
+</li>
+</ul>
+</div>
+</body>

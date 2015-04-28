@@ -81,6 +81,11 @@ test {
   finalizedBy jacocoTestReport
 }
 
+javadoc {
+    options.links = [ 'http://junit.org/javadoc/latest/' ]
+    options.overview = 'src/main/javadoc/overview.html'
+}
+
 jacocoTestReport {
     dependsOn test
 }
