@@ -107,4 +107,13 @@ public class LambdataTest {
             datum("a", 1),
             datum("hello", 5));
     }
+
+    @Test
+    @DescribeAs("\"{0}\".substring({1}, {2})")
+    public TestSpecs testSubString() {
+        return specs((s, start, end, expected) -> assertEquals(expected, s.substring(start, end)),
+            datum("hello", 0, 5, "hello"),
+            datum("flexible", 1, 4, "lex"),
+            datum("hello", 5, 5, ""));
+    }
 }
