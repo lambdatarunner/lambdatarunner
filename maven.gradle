@@ -1,0 +1,120 @@
+import groovy.swing.SwingBuilder
+
+apply plugin: 'maven'
+apply plugin: 'signing'
+
+task javadocJar(type: Jar) {
+    classifier = 'javadoc'
+    from javadoc
+}
+
+task sourcesJar(type: Jar) {
+    classifier = 'sources'
+    from sourceSets.main.allSource
+}
+
+artifacts { archives javadocJar, sourcesJar }
+
+archivesBaseName = rootProject.name
+
+ext.pom = pom {
+    project {
+        name 'Lambdata Runner'
+        packaging 'jar'
+        description 'A Junit runner using lambdas to parameterize tests'
+        url 'https://github.com/lambdatarunner/lambdatarunner'
+
+        scm {
+            connection 'scm:https://github.com/lambdatarunner/lambdatarunner.git'
+            developerConnection 'scm:git@github.com:lambdatarunner/lambdatarunner.git'
+            url 'https://github.com/lambdatarunner/lambdatarunner'
+        }
+
+        licenses {
+            license {
+                name 'The Apache License, Version 2.0'
+                url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+            }
+        }
+
+        developers {
+            developer {
+                id 'ian.b.robertson'
+                name 'Ian Roberttson'
+                url 'http://www.artima.com/weblogs/index.jsp?blogger=ianr'
+            }
+        }
+    }
+}
+
+ext.ossPassword = ""
+
+task getSonatypePassword << {
+    ext.ossPassword = getPassword("sonatype password")
+}
+
+ext."signing.password" = ""
+
+task getGpgPassword << {
+    String password =
+    this."signing.password" = getPassword("gpg password")
+}
+
+public String getPassword(String prompt) {
+    // courtesy of https://www.timroes.de/2014/01/19/using-password-prompts-with-gradle-build-files/
+
+    def pass = ''
+    if(System.console() == null) {
+        new SwingBuilder().edt {
+            dialog(modal: true, // Otherwise the build will continue running before you closed the dialog
+            title: 'Enter password', // Dialog title
+            alwaysOnTop: true, // pretty much what the name says
+            resizable: false, // Don't allow the user to resize the dialog
+            locationRelativeTo: null, // Place dialog in center of the screen
+            pack: true, // We need to pack the dialog (so it will take the size of it's children)
+            show: true // Let's show it
+            ) {
+                vbox {
+                    // Put everything below each other
+                    label(text: prompt)
+                    input = passwordField()
+                    button(defaultButton: true, text: 'OK', actionPerformed: {
+                        pass = new String(input.password); // Set pass variable to value of input field
+                        dispose(); // Close dialog
+                    })
+                } // vbox end
+            } // dialog end
+        } // edt end
+    } else {
+        pass = System.console().readPassword("\nPlease enter key passphrase: ")
+        pass = new String(pass)
+    }
+
+    if(pass.size() <= 0) {
+        throw new InvalidUserDataException("You must enter a password to proceed.")
+    }
+
+    return pass;
+}
+
+uploadArchives {
+    repositories {
+        mavenDeployer {
+            beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
+
+            repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
+                authentication(userName: ossUsername, password: ossPassword)
+            }
+
+            snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots/") {
+                authentication(userName: ossUsername, password: ossPassword)
+            }
+        }
+
+        pom.writeTo("pom.xml")
+    }
+}
+
+uploadArchives.dependsOn getSonatypePassword, getGpgPassword
+
+task createPom << { pom.writeTo("pom.xml") }

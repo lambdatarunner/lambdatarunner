@@ -1,8 +1,9 @@
 import org.jamon.compiler.TemplateProcessor;
 
 apply plugin: 'java'
-apply plugin: 'maven'
 apply plugin: 'jacoco'
+
+apply from: 'maven.gradle'
 
 group = 'org.lambdatarunner'
 version = 'master-SNAPSHOT'
