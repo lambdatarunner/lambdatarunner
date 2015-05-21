@@ -4,3 +4,6 @@
 /.project
 /.gradle/
 /.settings/
+pom.xml
+.idea/
+lambdatarunner.iml
