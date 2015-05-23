@@ -17,12 +17,10 @@ artifacts { archives javadocJar, sourcesJar }
 
 archivesBaseName = rootProject.name
 
-ext.pom = pom {
+def pomData = {
     project {
         name 'Lambdata Runner'
         packaging 'jar'
-        groupId project.group
-        version project.version
         description 'A Junit runner using lambdas to parameterize tests'
         url 'https://github.com/lambdatarunner/lambdatarunner'
 
@@ -101,7 +99,7 @@ public String getPassword(String prompt) {
 
 uploadArchives.dependsOn getGpgPassword
 
-task createPom << { pom.writeTo("pom.xml") }
+task createPom << { pomData() { }.writeTo("pom.xml") }
 
 signing {
     sign configurations.archives
@@ -123,10 +121,9 @@ gradle.taskGraph.whenReady { taskGraph ->
                     snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots/") {
                         authentication(userName: ossUsername, password: ossPassword)
                     }
+                    pom pomData
                 }
-
-                pom.writeTo("pom.xml")
             }
         }
     }
-  }
+}
