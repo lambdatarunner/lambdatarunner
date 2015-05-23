@@ -21,6 +21,8 @@ ext.pom = pom {
     project {
         name 'Lambdata Runner'
         packaging 'jar'
+        groupId project.group
+        version project.version
         description 'A Junit runner using lambdas to parameterize tests'
         url 'https://github.com/lambdatarunner/lambdatarunner'
 
@@ -100,6 +102,10 @@ public String getPassword(String prompt) {
 uploadArchives.dependsOn getGpgPassword
 
 task createPom << { pom.writeTo("pom.xml") }
+
+signing {
+    sign configurations.archives
+}
 
 gradle.taskGraph.whenReady { taskGraph ->
     if(taskGraph.hasTask(':uploadArchives')) {
