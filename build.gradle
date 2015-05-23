@@ -6,7 +6,7 @@ apply plugin: 'jacoco'
 apply from: 'maven.gradle'
 
 group = 'org.lambdatarunner'
-version = 'master-SNAPSHOT'
+version = '0.1-SNAPSHOT'
 
 description = "Data driven junit tests using lambdas"
 
