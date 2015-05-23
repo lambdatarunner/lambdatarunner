@@ -97,24 +97,30 @@ public String getPassword(String prompt) {
     return pass;
 }
 
-uploadArchives {
-    repositories {
-        mavenDeployer {
-            beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
-
-            repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
-                authentication(userName: ossUsername, password: ossPassword)
-            }
-
-            snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots/") {
-                authentication(userName: ossUsername, password: ossPassword)
-            }
-        }
-
-        pom.writeTo("pom.xml")
-    }
-}
-
-uploadArchives.dependsOn getSonatypePassword, getGpgPassword
+uploadArchives.dependsOn getGpgPassword
 
 task createPom << { pom.writeTo("pom.xml") }
+
+gradle.taskGraph.whenReady { taskGraph ->
+    if(taskGraph.hasTask(':uploadArchives')) {
+        ossPassword = getPassword("sonatype password")
+        // configuring the task here so that we can use the read-in password. I'm sure there is a better way...
+        uploadArchives.configure {
+            repositories {
+                mavenDeployer {
+                    beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
+
+                    repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
+                        authentication(userName: ossUsername, password: ossPassword)
+                    }
+
+                    snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots/") {
+                        authentication(userName: ossUsername, password: ossPassword)
+                    }
+                }
+
+                pom.writeTo("pom.xml")
+            }
+        }
+    }
+  }
