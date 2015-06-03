@@ -11,6 +11,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 import org.junit.Ignore;
+import org.junit.internal.runners.model.ReflectiveCallable;
+import org.junit.internal.runners.statements.Fail;
 import org.junit.runner.Description;
 import org.junit.runners.BlockJUnit4ClassRunner;
 import org.junit.runners.model.FrameworkMethod;
@@ -59,9 +61,17 @@ import org.lambdatarunner.internal.ParameterizedInvokeMethod;
  *   }
  * </pre>
  * <code>
+ * <p>
+ * Because the lambda method passed to the specs command has an implicit reference to the instance of the test class
+ * created to determine the different data to run, it must be this same instance against which befores, afters and rules
+ * are run. This differs from the usual JUnit behavior, in which a new instance of the test class is created for each
+ * run. In particular, initializing of any mutable instance fields in the test object should be done in a
+ * method annotated with {@link org.junit.Before @Before}, rather than in the field declarations or test class constructor.
  */
 public class LambdataRunner extends BlockJUnit4ClassRunner {
     private Map<Method, List<FrameworkMethod>> testMethods;
+
+    private final ThreadLocal<Object> testInstance = new ThreadLocal<>();
 
     public LambdataRunner(Class<?> klass) throws InitializationError {
         super(klass);
@@ -141,20 +151,72 @@ public class LambdataRunner extends BlockJUnit4ClassRunner {
         }
     }
 
+    @Override
+    protected Statement methodBlock(FrameworkMethod method) {
+        // The lambda expression which is used to run the test is implicitly bound to the test object that was created
+        // to determine the data to run that expression over. Consequently, the method block must use that same instance.
+        // Because the superclass implementation of this method calls private methods, we cannot easily override this
+        // with a method that does not call super.methodBlock. Consequently, we are forced to override the createTest()
+        // method, and to do so, we must "tunnel" in the test object we want it to return
+        if (method instanceof ParameterizedFrameworkMethod) {
+            testInstance.set(((ParameterizedFrameworkMethod) method).getTest());
+        }
+        try {
+            return super.methodBlock(method);
+        }
+        finally {
+            testInstance.remove();
+        }
+    }
+
+    @Override
+    protected Object createTest() throws Exception {
+        Object test = testInstance.get();
+        if (test != null) {
+            return test;
+        }
+        else {
+            return super.createTest();
+        }
+    }
+
     private static boolean isParameterizedMethod(Method method) {
         return TestSpecs.class.isAssignableFrom(method.getReturnType());
     }
 
     private List<FrameworkMethod> parameterizeMethod(FrameworkMethod method) {
+        Object test = createTestSafely();
+
         AtomicInteger count = new AtomicInteger();
-        return getTestSpecs(method).stream()
-            .map(spec -> new ParameterizedFrameworkMethod(getTestClass().getJavaClass(), method.getMethod(), spec, count.incrementAndGet()))
+
+        return getTestSpecs(test, method).stream()
+            .map(spec -> new ParameterizedFrameworkMethod(method.getMethod(), spec, test, count.incrementAndGet()))
             .collect(Collectors.toList());
     }
 
-    private List<TestSpec> getTestSpecs(FrameworkMethod method) {
+    private Object createTestSafely() {
         try {
-            return ((TestSpecs) method.getMethod().invoke(createTest())).getSpecs();
+            return super.createTest();
+        }
+        catch (InvocationTargetException e) {
+            if (e.getCause() instanceof RuntimeException) {
+                throw (RuntimeException) e.getCause();
+            }
+            else {
+                throw new RuntimeException(e.getCause());
+            }
+        }
+        catch (RuntimeException e) {
+            throw e;
+        }
+        catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private List<TestSpec> getTestSpecs(Object test, FrameworkMethod method) {
+        try {
+            return ((TestSpecs) method.getMethod().invoke(test)).getSpecs();
         }
         catch (InvocationTargetException e) {
             if (e.getCause() instanceof RuntimeException) {

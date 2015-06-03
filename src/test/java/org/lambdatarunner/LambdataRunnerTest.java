@@ -4,6 +4,8 @@ import static org.junit.Assert.*;
 
 import java.util.Arrays;
 
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.Description;
@@ -78,9 +80,36 @@ public class LambdataRunnerTest {
         Class<SimpleTestIgnore> testClass = SimpleTestIgnore.class;
         Description testDescription = Description.createTestDescription(testClass, "testIgnored");
         runTests(testClass).verifyEvents(
-            testRunStarted(),
-            testIgnored(testDescription),
-            testRunFinished(1, 0));
+                testRunStarted(),
+                testIgnored(testDescription),
+                testRunFinished(1, 0));
+    }
+
+
+    @RunWith(LambdataRunner.class)
+    public static class SimpleTestBeforeAfter {
+        private static boolean beforeRun = false;
+        private static boolean afterRun = false;
+        @Before public void before() {
+            beforeRun = true;
+        }
+        @Test public void testRun() { }
+        @After public void after() {
+            afterRun = true;
+        }
+    }
+
+    @Test
+    public void simpleTestBeforeAfter() throws Exception {
+        Class<SimpleTestBeforeAfter> testClass = SimpleTestBeforeAfter.class;
+        Description testDescription = Description.createTestDescription(testClass, "testRun");
+        runTests(testClass).verifyEvents(
+                testRunStarted(),
+                testStarted(testDescription),
+                testFinished(testDescription),
+                testRunFinished(0, 1));
+        assertTrue(SimpleTestBeforeAfter.beforeRun);
+        assertTrue(SimpleTestBeforeAfter.afterRun);
     }
 
     @RunWith(LambdataRunner.class)
@@ -188,6 +217,43 @@ public class LambdataRunnerTest {
             testRunStarted(),
             testIgnored(testDescription),
             testRunFinished(1, 0));
+    }
+
+    @RunWith(LambdataRunner.class)
+    public static class ParameterizedTestSuccessBeforeAfter {
+        static int instantiationCount = 0;
+
+        public ParameterizedTestSuccessBeforeAfter() {
+            instantiationCount++;
+        }
+
+        boolean initialized = false;
+        @Before public void before() {
+            if (initialized) { throw new RuntimeException(); }
+            initialized = true;
+        }
+        @After public void after() { initialized = false; }
+        @Test public TestSpecs testSucceed() {
+            return specs((Integer i) -> { assertTrue(initialized); },
+                    datum(1),
+                    datum(2));
+        }
+    }
+
+    @Test
+    public void parameterizedTestSuccessBeforeAfterRun() throws Exception {
+        Class<ParameterizedTestSuccessBeforeAfter> testClass = ParameterizedTestSuccessBeforeAfter.class;
+        Description testDescription1 = Description.createTestDescription(testClass, "testSucceed: 1");
+        Description testDescription2 = Description.createTestDescription(testClass, "testSucceed: 2");
+        runTests(testClass).verifyEvents(
+                testRunStarted(),
+                testStarted(testDescription1),
+                testFinished(testDescription1),
+                testStarted(testDescription2),
+                testFinished(testDescription2),
+                testRunFinished(0, 2));
+        // all runs should take place on original instance
+        assertEquals(1, ParameterizedTestSuccessBeforeAfter.instantiationCount);
     }
 
     @RunWith(LambdataRunner.class)

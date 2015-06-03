@@ -17,11 +17,21 @@ public class ParameterizedFrameworkMethod extends FrameworkMethod {
 
     private final Description description;
 
-    public ParameterizedFrameworkMethod(Class<?> klass, Method method, TestSpec testSpec, int count) {
+    private final Object test;
+
+    /**
+     * Create a new instance.
+     * @param method the @Test-annotated method which returns
+     * @param testSpec the test to run, with data bound
+     * @param test the test object
+     * @param count A unique number for this run of the test to help distinguish it from other runs.
+     */
+    public ParameterizedFrameworkMethod(Method method, TestSpec testSpec, Object test, int count) {
         super(method);
         this.testSpec = testSpec;
+        this.test = test;
         description = Description.createTestDescription(
-            klass, parameterizedTestName(method, testSpec.getDatum(), count), method.getAnnotations());
+            test.getClass(), parameterizedTestName(method, testSpec.getDatum(), count), method.getAnnotations());
     }
 
     private String parameterizedTestName(Method method, Datum datum, int count) {
@@ -36,6 +46,14 @@ public class ParameterizedFrameworkMethod extends FrameworkMethod {
 
     TestSpec getTestSpec() {
         return testSpec;
+    }
+
+    /**
+     * Get the test instance used to run the test method
+     * @return the test instance used to run the test method
+     */
+    public Object getTest() {
+        return test;
     }
 
     @Override
