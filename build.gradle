@@ -2,6 +2,7 @@ import org.jamon.compiler.TemplateProcessor;
 
 apply plugin: 'java'
 apply plugin: 'jacoco'
+apply plugin: 'build-dashboard'
 
 apply from: 'maven.gradle'
 
