@@ -60,7 +60,7 @@ import org.lambdatarunner.internal.ParameterizedInvokeMethod;
  *     }
  *   }
  * </pre>
- * <code>
+ * </code>
  * <p>
  * Because the lambda method passed to the specs command has an implicit reference to the instance of the test class
  * created to determine the different data to run, it must be this same instance against which befores, afters and rules
