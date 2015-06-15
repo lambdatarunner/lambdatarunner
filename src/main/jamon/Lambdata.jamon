@@ -3,6 +3,7 @@
 </%args>
 package org.lambdatarunner;
 
+import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -35,6 +36,17 @@ public final class Lambdata {
   @SafeVarargs
   public static <<& typeParameters: i &>> TestSpecs specs(TestRunner<% i %><<& typeParameters: i &>> testRunner, Datum<% i %><<& typeParameters: i &>>... data) {
     return new TestSpecs(Stream.of(data).map(datum -> new TestSpec<% i %><>(testRunner, datum)).collect(Collectors.toList()));
+  }
+
+  /**
+   * Create a TestSpecs to be run by {@link LambdataRunner}
+   * @param testRunner a lambda expression containing test code
+   * @param data a list of datum to provide to {@code testRunner}, created by calls to
+   * {@link #datum(<&| commaJoin: i &><%args>int j;</%args>Object</&>)}
+   * @return test specs
+   */
+  public static <<& typeParameters: i &>> TestSpecs specs(TestRunner<% i %><<& typeParameters: i &>> testRunner, List<Datum<% i %><<& typeParameters: i &>>> data) {
+    return new TestSpecs(data.stream().map(datum -> new TestSpec<% i %><>(testRunner, datum)).collect(Collectors.toList()));
   }
 </&>
 }

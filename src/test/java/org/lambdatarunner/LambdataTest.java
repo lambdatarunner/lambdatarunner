@@ -8,6 +8,8 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.util.Arrays;
+
 /**
  * Tests to be used to see how LambdataRunner interacts with various test runners.
  */
@@ -115,5 +117,14 @@ public class LambdataTest {
             datum("hello", 0, 5, "hello"),
             datum("flexible", 1, 4, "lex"),
             datum("hello", 5, 5, ""));
+    }
+
+    @Test
+    public TestSpecs testListSyntax() {
+        return specs((s, start, end, expected) -> assertEquals(expected, s.substring(start, end)),
+                Arrays.asList(
+                        datum("hello", 0, 5, "hello"),
+                        datum("flexible", 1, 4, "lex"),
+                        datum("hello", 5, 5, "")));
     }
 }
