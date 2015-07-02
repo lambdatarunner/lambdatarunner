@@ -3,6 +3,7 @@ import org.jamon.compiler.TemplateProcessor;
 apply plugin: 'java'
 apply plugin: 'jacoco'
 apply plugin: 'build-dashboard'
+apply plugin: 'org.ajoberstar.github-pages'
 
 apply from: 'maven.gradle'
 
@@ -20,6 +21,7 @@ buildscript {
     dependencies {
         classpath 'org.jamon:jamon-processor:2.4.2'
         classpath 'org.jamon:jamon-runtime:2.4.1'
+        classpath 'org.ajoberstar:gradle-git:1.2.0'
     }
     repositories {
          mavenCentral()
@@ -87,6 +89,13 @@ javadoc {
 
 jacocoTestReport {
     dependsOn test
+}
+
+githubPages {
+    repoUri = 'git@github.com:lambdatarunner/lambdatarunner.git'
+    pages {
+        from javadoc
+    }
 }
 
 void runTemplate(ClassLoader loader, String templateName, String className, Object... templateArgs) {
