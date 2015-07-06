@@ -1,11 +1,13 @@
 import org.jamon.compiler.TemplateProcessor;
+import org.ajoberstar.grgit.Grgit
+import org.ajoberstar.gradle.git.release.opinion.Strategies
+import org.ajoberstar.gradle.git.release.semver.RebuildVersionStrategy
 
 apply plugin: 'java'
 apply plugin: 'jacoco'
 apply plugin: 'build-dashboard'
 apply plugin: 'org.ajoberstar.github-pages'
-
-apply from: 'maven.gradle'
+apply plugin: 'org.ajoberstar.release-opinion'
 
 description = "Data driven junit tests using lambdas"
 
@@ -97,6 +99,18 @@ githubPages {
         from javadoc
     }
 }
+
+release {
+    // need to specify the repository to interact with
+    grgit = Grgit.open(project.file('.'))
+
+    tagStrategy {
+        prefixNameWithV = false // defaults to true
+        generateMessage = { version -> "Version $version.version" }
+    }
+}
+
+apply from: 'maven.gradle' // needs to go after the release section, for some reason...
 
 void runTemplate(ClassLoader loader, String templateName, String className, Object... templateArgs) {
     File targetFile = file("${generatedJava}/org/lambdatarunner/${className}.java")
