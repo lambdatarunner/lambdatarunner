@@ -20,6 +20,8 @@ public class StringTest {
 }
 ```
 
+Full javadoc is available at http://lambdatarunner.github.io/lambdatarunner/
+
 LambdataRunner is compatible with maven and eclipse, and likely others.
 
 Presently, this project is in alpha status. Please share any thoughts you have about how the API could be improved!
