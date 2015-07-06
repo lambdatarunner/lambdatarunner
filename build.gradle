@@ -94,7 +94,8 @@ jacocoTestReport {
 }
 
 githubPages {
-    repoUri = 'git@github.com:lambdatarunner/lambdatarunner.git'
+    repoUri = 'git@github.com:lambdatarunner/lambdatarunner.github.io.git'
+    targetBranch = 'master'
     pages {
         from javadoc
     }

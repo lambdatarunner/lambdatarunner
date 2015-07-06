@@ -20,7 +20,7 @@ public class StringTest {
 }
 ```
 
-Full javadoc is available at http://lambdatarunner.github.io/lambdatarunner/
+Full javadoc is available at http://lambdatarunner.github.io/
 
 LambdataRunner is compatible with maven and eclipse, and likely others.
 
