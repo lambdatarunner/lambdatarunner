@@ -27,7 +27,7 @@ LambdataRunner is compatible with maven and eclipse, and likely others.
 Presently, this project is in alpha status. Please share any thoughts you have about how the API could be improved!
 ## History:
 
-* **0.3**: Add ability to specify test data as a list, instead of a varargs array
+* **0.3.0**: Add ability to specify test data as a list, instead of a varargs array
 * **0.2**: Don't create a new instance of the test class for each datum, since the test closure will run against the instance
   used to create the test.
 * **0.1**: Initial release
